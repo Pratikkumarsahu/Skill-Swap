@@ -28,6 +28,16 @@ const seedData = async () => {
     console.log('Creating users...');
     const users = [
       {
+        name: 'System Administrator',
+        email: 'admin@example.com',
+        password: hashedPassword,
+        skillsOffered: ['Moderation', 'Platform Support'],
+        skillsNeeded: ['User Feedback'],
+        bio: 'Official administration account for the SkillSwap peer network.',
+        avatar: 'https://ui-avatars.com/api/?name=System+Admin&background=ef4444&color=fff&size=128',
+        isAdmin: true,
+      },
+      {
         name: 'Alice Vance',
         email: 'alice@example.com',
         password: hashedPassword,
@@ -77,11 +87,12 @@ const seedData = async () => {
     const createdUsers = await User.create(users);
     console.log(`Seeded ${createdUsers.length} users successfully.`);
 
-    const alice = createdUsers[0];
-    const bob = createdUsers[1];
-    const carlos = createdUsers[2];
-    const diana = createdUsers[3];
-    const evan = createdUsers[4];
+    const adminUser = createdUsers[0];
+    const alice = createdUsers[1];
+    const bob = createdUsers[2];
+    const carlos = createdUsers[3];
+    const diana = createdUsers[4];
+    const evan = createdUsers[5];
 
     console.log('Seeding mock swap sessions...');
     

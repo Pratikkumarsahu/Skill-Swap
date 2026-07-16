@@ -56,6 +56,8 @@ router.post('/register', async (req, res) => {
         avatar: user.avatar,
         averageRating: user.averageRating,
         reviewCount: user.reviewCount,
+        isAdmin: user.isAdmin,
+        warnings: user.warnings,
         token: generateToken(user._id),
       });
     } else {
@@ -88,6 +90,8 @@ router.post('/login', async (req, res) => {
         avatar: user.avatar,
         averageRating: user.averageRating,
         reviewCount: user.reviewCount,
+        isAdmin: user.isAdmin,
+        warnings: user.warnings,
         token: generateToken(user._id),
       });
     } else {
@@ -146,6 +150,8 @@ router.put('/profile', protect, async (req, res) => {
         avatar: updatedUser.avatar,
         averageRating: updatedUser.averageRating,
         reviewCount: updatedUser.reviewCount,
+        isAdmin: updatedUser.isAdmin,
+        warnings: updatedUser.warnings,
         token: generateToken(updatedUser._id),
       });
     } else {

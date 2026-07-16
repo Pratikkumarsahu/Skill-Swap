@@ -11,6 +11,8 @@ import userRoutes from './routes/users.js';
 import sessionRoutes from './routes/sessions.js';
 import reviewRoutes from './routes/reviews.js';
 import chatRoutes from './routes/chats.js';
+import adminRoutes from './routes/admin.js';
+import reportRoutes from './routes/reports.js';
 
 // Socket handler
 import socketHandler from './socket/socketHandler.js';
@@ -44,6 +46,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/chats', chatRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/reports', reportRoutes);
 
 // Health Check Route
 app.get('/health', (req, res) => {

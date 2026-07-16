@@ -41,6 +41,16 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  isAdmin: {
+    type: Boolean,
+    default: false,
+  },
+  warnings: [
+    {
+      reason: { type: String, required: true },
+      date: { type: Date, default: Date.now },
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now,

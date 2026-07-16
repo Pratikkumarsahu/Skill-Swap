@@ -11,6 +11,7 @@ import {
   LogOut,
   Sparkles,
   Star,
+  Shield,
 } from 'lucide-react';
 
 const Sidebar = ({ currentPage, onNavigate }) => {
@@ -25,6 +26,11 @@ const Sidebar = ({ currentPage, onNavigate }) => {
     { id: 'schedule', label: 'My Sessions', icon: Calendar },
     { id: 'profile', label: 'My Profile', icon: User },
   ];
+
+  // Append admin dashboard menu item if user is platform admin
+  if (user?.isAdmin) {
+    menuItems.push({ id: 'admin', label: 'Admin Panel', icon: Shield });
+  }
 
   return (
     <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col h-screen sticky top-0">

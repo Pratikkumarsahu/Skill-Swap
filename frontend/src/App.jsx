@@ -8,6 +8,7 @@ import Explore from './pages/Explore';
 import Chat from './pages/Chat';
 import Schedule from './pages/Schedule';
 import Profile from './pages/Profile';
+import AdminPanel from './pages/AdminPanel';
 
 function App() {
   const { user, loading } = useAuth();
@@ -70,6 +71,7 @@ function App() {
           />
         )}
         {currentPage === 'profile' && <Profile />}
+        {currentPage === 'admin' && <AdminPanel />}
       </main>
     </div>
   );

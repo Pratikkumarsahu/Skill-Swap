@@ -85,6 +85,22 @@ const Dashboard = ({ onNavigate, setSelectChatUserId }) => {
 
   return (
     <div className="flex-1 bg-slate-950 p-8 overflow-y-auto">
+      {/* Warnings Banner Alert */}
+      {user?.warnings && user.warnings.length > 0 && (
+        <div className="mb-6 p-4 rounded-xl bg-red-950/20 border border-red-900/30 text-red-400 text-xs space-y-2">
+          <h4 className="font-extrabold text-sm flex items-center gap-1.5 text-red-450">
+            <span>⚠️</span> Indisciplinary Warning(s) from Administrator
+          </h4>
+          <ul className="list-disc pl-4 space-y-1 text-slate-350">
+            {user.warnings.map((warn, idx) => (
+              <li key={idx}>
+                {warn.reason} <span className="text-[10px] text-slate-500">({new Date(warn.date).toLocaleDateString()})</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Welcome Banner */}
       <div className="relative rounded-2xl bg-indigo-900/40 p-8 border border-indigo-500/20 mb-8">
         <div className="relative z-10 max-w-xl">

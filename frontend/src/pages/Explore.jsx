@@ -1,7 +1,7 @@
 // Explore page for searching matching skill swap partners
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Search, Sparkles, Star, MessageSquare, Calendar, X, Clock } from 'lucide-react';
+import { Search, Sparkles, Star, MessageSquare, Calendar, X, Clock, Flag } from 'lucide-react';
 
 const Explore = ({ onNavigate, setSelectChatUserId }) => {
   const { user, token, API_URL } = useAuth();
@@ -21,6 +21,14 @@ const Explore = ({ onNavigate, setSelectChatUserId }) => {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookingError, setBookingError] = useState('');
+
+  // Report Modal State
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [reportTargetUser, setReportTargetUser] = useState(null);
+  const [reportReason, setReportReason] = useState('');
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportSuccess, setReportSuccess] = useState(false);
+  const [reportError, setReportError] = useState('');
 
   // Fetch match explore list on load
   const fetchMatches = async () => {
@@ -63,6 +71,61 @@ const Explore = ({ onNavigate, setSelectChatUserId }) => {
   const closeBookingModal = () => {
     setIsBookingOpen(false);
     setSelectedPartner(null);
+  };
+
+  const openReportModal = (partner) => {
+    setReportTargetUser(partner);
+    setReportReason('');
+    setReportSuccess(false);
+    setReportError('');
+    setIsReportOpen(true);
+  };
+
+  const closeReportModal = () => {
+    setIsReportOpen(false);
+    setReportTargetUser(null);
+  };
+
+  // Submit user report to backend API
+  const handleReportSubmit = async (e) => {
+    e.preventDefault();
+    setReportError('');
+    setReportLoading(true);
+
+    if (!reportReason.trim()) {
+      setReportError('Please write a reason for the report.');
+      setReportLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/reports`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          reportedUserId: reportTargetUser._id,
+          reason: reportReason.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to submit report');
+      }
+
+      setReportSuccess(true);
+      setTimeout(() => {
+        closeReportModal();
+      }, 1500);
+    } catch (err) {
+      setReportError(err.message);
+    } finally {
+      setReportLoading(false);
+    }
   };
 
   // Submit swap session proposal
@@ -203,8 +266,8 @@ const Explore = ({ onNavigate, setSelectChatUserId }) => {
                     alt={match.user.name}
                     className="w-14 h-14 rounded-2xl border border-slate-800 object-cover"
                   />
-                  <div>
-                    <h3 className="font-extrabold text-white text-base leading-snug">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-extrabold text-white text-base leading-snug truncate">
                       {match.user.name}
                     </h3>
                     <div className="flex items-center gap-1.5 mt-1">
@@ -217,6 +280,14 @@ const Explore = ({ onNavigate, setSelectChatUserId }) => {
                       </span>
                     </div>
                   </div>
+                  {/* Report Peer Flag button */}
+                  <button
+                    onClick={() => openReportModal(match.user)}
+                    title="Report user"
+                    className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all flex-shrink-0"
+                  >
+                    <Flag className="w-4 h-4" />
+                  </button>
                 </div>
 
                 <p className="text-slate-400 text-xs leading-relaxed line-clamp-3">
@@ -437,6 +508,76 @@ const Explore = ({ onNavigate, setSelectChatUserId }) => {
                       className="px-5 py-2 bg-indigo-600 hover:bg-indigo-750 text-white text-xs font-semibold rounded-xl"
                     >
                       {bookingLoading ? 'Sending...' : 'Send'}
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Report User Modal popup */}
+      {isReportOpen && reportTargetUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 relative shadow-2xl">
+            <button
+              onClick={closeReportModal}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-200 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {reportSuccess ? (
+              <div className="text-center py-8 space-y-3">
+                <div className="w-12 h-12 bg-red-500/10 border border-red-500/20 text-red-400 rounded-full flex items-center justify-center mx-auto text-xl font-bold">✓</div>
+                <h3 className="text-lg font-bold text-white">Report Submitted</h3>
+                <p className="text-sm text-slate-400">
+                  Your report against {reportTargetUser.name} has been sent to the Admin.
+                </p>
+              </div>
+            ) : (
+              <>
+                <h3 className="text-lg font-bold text-white mb-1">Report User Account</h3>
+                <p className="text-sm text-slate-400 mb-5">
+                  Explain the reason for reporting <span className="text-red-400 font-semibold">{reportTargetUser.name}</span>.
+                </p>
+
+                {reportError && (
+                  <div className="mb-4 p-3 rounded-lg bg-red-950/20 border border-red-900/30 text-red-400 text-xs">
+                    {reportError}
+                  </div>
+                )}
+
+                <form onSubmit={handleReportSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">
+                      Reason for Report
+                    </label>
+                    <textarea
+                      rows={4}
+                      required
+                      value={reportReason}
+                      onChange={(e) => setReportReason(e.target.value)}
+                      placeholder="Specify the reason (e.g. inappropriate behavior, fake skills...)"
+                      className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs placeholder-slate-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="flex gap-3 justify-end pt-3">
+                    <button
+                      type="button"
+                      onClick={closeReportModal}
+                      className="px-4 py-2 border border-slate-800 text-slate-300 hover:bg-slate-800 text-xs font-semibold rounded-xl"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={reportLoading}
+                      className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl"
+                    >
+                      {reportLoading ? 'Submitting...' : 'Submit Report'}
                     </button>
                   </div>
                 </form>
