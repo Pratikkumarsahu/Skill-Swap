@@ -1,6 +1,11 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
+import dns from 'dns';
+
+// Force Node.js to use IPv4 DNS resolution first (fixes SRV querySrv connection bugs)
+dns.setDefaultResultOrder('ipv4first');
+
 import User from '../models/User.js';
 import Session from '../models/Session.js';
 import Message from '../models/Message.js';

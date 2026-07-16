@@ -1,5 +1,9 @@
 // Database configuration file using mongoose
 import mongoose from 'mongoose';
+import dns from 'dns';
+
+// Force Node.js to use IPv4 DNS resolution first (fixes connection bug on some ISPs)
+dns.setDefaultResultOrder('ipv4first');
 
 // Connect to MongoDB function
 const connectDB = async () => {
