@@ -10,8 +10,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
-  // Base API url (point to backend dev port 5000)
-  const API_URL = 'http://localhost:5000/api';
+  // Base API url (uses environment variable for production, falls back to localhost)
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   // Load user profile automatically on mount if token exists
   useEffect(() => {
