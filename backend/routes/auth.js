@@ -242,6 +242,54 @@ router.put('/profile', protect, async (req, res) => {
     console.error(error);
     res.status(500).json({ message: 'Server Error updating user profile' });
   }
+// Diagnostic route to test SMTP configurations
+// GET /api/auth/test-email
+router.get('/test-email', async (req, res) => {
+  const { email } = req.query;
+  if (!email) {
+    return res.status(400).json({ message: 'Please specify an email query parameter (e.g. ?email=test@example.com)' });
+  }
+
+  const emailUser = process.env.EMAIL_USER;
+  const emailPass = process.env.EMAIL_PASS;
+
+  try {
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: emailUser,
+        pass: emailPass,
+      },
+    });
+
+    await transporter.sendMail({
+      from: `"SkillSwap Diagnostic" <${emailUser}>`,
+      to: email,
+      subject: 'SkillSwap Email Diagnostics',
+      text: 'If you are reading this email, your Google SMTP configuration is working perfectly!',
+    });
+
+    res.json({
+      success: true,
+      message: `Diagnostic email successfully sent to ${email}`,
+      configUsed: {
+        EMAIL_USER: emailUser,
+        EMAIL_PASS_LENGTH: emailPass ? emailPass.length : 0,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'SMTP Email Sending Failed',
+      errorMessage: error.message,
+      configUsed: {
+        EMAIL_USER: emailUser,
+        EMAIL_PASS_LENGTH: emailPass ? emailPass.length : 0,
+      },
+    });
+  }
 });
+
+import nodemailer from 'nodemailer';
 
 export default router;
