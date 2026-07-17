@@ -12,9 +12,11 @@ import {
   Sparkles,
   Star,
   Shield,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
-const Sidebar = ({ currentPage, onNavigate }) => {
+const Sidebar = ({ currentPage, onNavigate, theme, onToggleTheme }) => {
   const { user, logout } = useAuth();
   const { onlineUsers } = useSocket();
 
@@ -98,8 +100,16 @@ const Sidebar = ({ currentPage, onNavigate }) => {
         })}
       </nav>
 
-      {/* Logout button bottom panel */}
-      <div className="p-4 border-t border-slate-800">
+      {/* Theme and Logout buttons bottom panel */}
+      <div className="p-4 border-t border-slate-800 space-y-2">
+        <button
+          onClick={onToggleTheme}
+          className="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-850 transition-all"
+        >
+          {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          {theme === 'dark' ? 'Day Mode' : 'Night Mode'}
+        </button>
+
         <button
           onClick={logout}
           className="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-slate-800 transition-all"
