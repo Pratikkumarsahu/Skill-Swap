@@ -2,6 +2,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import nodemailer from 'nodemailer';
 import User from '../models/User.js';
 import { protect } from '../middleware/auth.js';
 import { sendOtpEmail } from '../utils/email.js';
@@ -242,6 +243,8 @@ router.put('/profile', protect, async (req, res) => {
     console.error(error);
     res.status(500).json({ message: 'Server Error updating user profile' });
   }
+});
+
 // Diagnostic route to test SMTP configurations
 // GET /api/auth/test-email
 router.get('/test-email', async (req, res) => {
@@ -289,7 +292,5 @@ router.get('/test-email', async (req, res) => {
     });
   }
 });
-
-import nodemailer from 'nodemailer';
 
 export default router;
