@@ -80,23 +80,6 @@ router.post('/login', async (req, res) => {
     const user = await User.findOne({ email }).select('+password');
 
     if (user && (await bcrypt.compare(password, user.password))) {
-      // Check if account is verified
-      if (!user.isVerified) {
-        // Generate new OTP and send it
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        user.otp = otp;
-        user.otpExpiry = Date.now() + 10 * 60 * 1000;
-        await user.save();
-
-        await sendOtpEmail(user.email, otp);
-
-        return res.status(401).json({
-          message: 'Account not verified. Please verify your email.',
-          email: user.email,
-          isVerified: false,
-        });
-      }
-
       res.json({
         _id: user._id,
         name: user.name,
