@@ -257,29 +257,32 @@ router.get('/test-email', async (req, res) => {
 
   const emailUser = process.env.EMAIL_USER;
   const emailPass = process.env.EMAIL_PASS;
+  const emailHost = process.env.EMAIL_HOST || 'smtp.gmail.com';
+  const emailPort = parseInt(process.env.EMAIL_PORT) || 465;
+  const emailSecure = process.env.EMAIL_SECURE !== 'false';
 
   try {
-    let hostAddress = 'smtp.gmail.com';
+    let hostAddress = emailHost;
     try {
-      const ips = await dns.resolve4('smtp.gmail.com');
+      const ips = await dns.resolve4(emailHost);
       if (ips && ips.length > 0) {
         hostAddress = ips[0];
       }
     } catch (dnsErr) {
-      console.warn('[SMTP DNS] Failed to resolve smtp.gmail.com over IPv4, falling back to hostname:', dnsErr.message);
+      console.warn(`[SMTP DNS] Failed to resolve ${emailHost} over IPv4, falling back to hostname:`, dnsErr.message);
     }
 
     const transporter = nodemailer.createTransport({
       host: hostAddress,
-      port: 465,
-      secure: true,
+      port: emailPort,
+      secure: emailSecure,
       auth: {
         user: emailUser,
         pass: emailPass,
       },
       tls: {
         rejectUnauthorized: false,
-        servername: 'smtp.gmail.com',
+        servername: emailHost,
       },
     });
 
@@ -296,6 +299,9 @@ router.get('/test-email', async (req, res) => {
       configUsed: {
         EMAIL_USER: emailUser,
         EMAIL_PASS_LENGTH: emailPass ? emailPass.length : 0,
+        EMAIL_HOST: emailHost,
+        EMAIL_PORT: emailPort,
+        EMAIL_SECURE: emailSecure,
       },
     });
   } catch (error) {

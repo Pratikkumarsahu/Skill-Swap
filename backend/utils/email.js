@@ -1,10 +1,15 @@
-// Helper utility for sending email verification codes via Nodemailer or printing to logs
+// Helper utility for sending email verification codes via customizable SMTP configs or logs
 import nodemailer from 'nodemailer';
 import dns from 'dns/promises';
 
 export const sendOtpEmail = async (email, otp) => {
   const emailUser = process.env.EMAIL_USER;
   const emailPass = process.env.EMAIL_PASS;
+  
+  // Custom SMTP settings (allows bypassing Render port blocks by using servers like Brevo on port 2525)
+  const emailHost = process.env.EMAIL_HOST || 'smtp.gmail.com';
+  const emailPort = parseInt(process.env.EMAIL_PORT) || 465;
+  const emailSecure = process.env.EMAIL_SECURE !== 'false'; // defaults to true (SSL)
 
   // Print a large console log box so the code is easy to find in terminal/Render logs
   console.log('\n=========================================');
@@ -19,30 +24,30 @@ export const sendOtpEmail = async (email, otp) => {
   }
 
   try {
-    // Dynamically resolve smtp.gmail.com to IPv4 address to bypass Render's IPv6 outbound socket errors
-    let hostAddress = 'smtp.gmail.com';
+    // Dynamically resolve SMTP host to IPv4 address to bypass Render's IPv6 outbound socket errors
+    let hostAddress = emailHost;
     try {
-      const ips = await dns.resolve4('smtp.gmail.com');
+      const ips = await dns.resolve4(emailHost);
       if (ips && ips.length > 0) {
         hostAddress = ips[0];
-        console.log(`[SMTP DNS] Dynamically resolved smtp.gmail.com to IPv4: ${hostAddress}`);
+        console.log(`[SMTP DNS] Dynamically resolved ${emailHost} to IPv4: ${hostAddress}`);
       }
     } catch (dnsErr) {
-      console.warn('[SMTP DNS] Failed to resolve smtp.gmail.com over IPv4, falling back to hostname:', dnsErr.message);
+      console.warn(`[SMTP DNS] Failed to resolve ${emailHost} over IPv4, falling back to hostname:`, dnsErr.message);
     }
 
-    // Setup transporter using Gmail SMTP over IPv4 / Port 465 (SMTPS)
+    // Setup transporter using configurable SMTP settings
     const transporter = nodemailer.createTransport({
       host: hostAddress,
-      port: 465,
-      secure: true, // true for 465, false for 587
+      port: emailPort,
+      secure: emailSecure,
       auth: {
         user: emailUser,
-        pass: emailPass, // App password
+        pass: emailPass, // App password or SMTP key
       },
       tls: {
         rejectUnauthorized: false,
-        servername: 'smtp.gmail.com', // Crucial to match TLS SNI certificate
+        servername: emailHost, // Crucial to match TLS SNI certificate
       },
     });
 
@@ -70,7 +75,6 @@ export const sendOtpEmail = async (email, otp) => {
     return true;
   } catch (error) {
     console.error('❌  Error sending email via Nodemailer:', error.message);
-    // Return true anyway so that registration doesn't fail due to SMTP password errors
     return true;
   }
 };
