@@ -54,8 +54,8 @@ router.post('/register', async (req, res) => {
     });
 
     if (user) {
-      // Send the OTP email (falls back to console logging if credentials not set)
-      await sendOtpEmail(email, otp);
+      // Send the OTP email asynchronously so the frontend doesn't hang waiting for SMTP handshakes
+      sendOtpEmail(email, otp).catch((err) => console.error('Async email send failed:', err));
 
       res.status(201).json({
         message: 'Registration successful. Verification OTP sent to email.',
@@ -176,7 +176,8 @@ router.post('/resend-otp', async (req, res) => {
     user.otpExpiry = Date.now() + 10 * 60 * 1000;
     await user.save();
 
-    await sendOtpEmail(email, otp);
+    // Send the OTP email asynchronously so the frontend doesn't hang waiting for SMTP handshakes
+    sendOtpEmail(email, otp).catch((err) => console.error('Async email send failed:', err));
 
     res.json({ message: 'New verification code sent successfully.' });
   } catch (error) {
