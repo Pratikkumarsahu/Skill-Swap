@@ -1,6 +1,10 @@
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
+import dns from 'dns';
+
+// Force Node.js to use IPv4 DNS resolution (fixes Render's outbound IPv6 network unreachable bugs)
+dns.setDefaultResultOrder('ipv4first');
 import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';

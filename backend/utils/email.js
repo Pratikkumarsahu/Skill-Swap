@@ -18,9 +18,11 @@ export const sendOtpEmail = async (email, otp) => {
   }
 
   try {
-    // Setup transporter using Gmail SMTP
+    // Setup transporter using Gmail SMTP over IPv4 / Port 587 (TLS)
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false, // true for 465, false for 587
       auth: {
         user: emailUser,
         pass: emailPass, // App password
