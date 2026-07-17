@@ -286,8 +286,10 @@ router.get('/test-email', async (req, res) => {
       },
     });
 
+    const emailFrom = process.env.EMAIL_FROM || emailUser;
+
     await transporter.sendMail({
-      from: `"SkillSwap Diagnostic" <${emailUser}>`,
+      from: `"SkillSwap Diagnostic" <${emailFrom}>`,
       to: email,
       subject: 'SkillSwap Email Diagnostics',
       text: 'If you are reading this email, your Google SMTP configuration is working perfectly!',

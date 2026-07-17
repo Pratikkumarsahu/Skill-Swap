@@ -51,8 +51,10 @@ export const sendOtpEmail = async (email, otp) => {
       },
     });
 
+    const emailFrom = process.env.EMAIL_FROM || emailUser;
+
     const mailOptions = {
-      from: `"SkillSwap Support" <${emailUser}>`,
+      from: `"SkillSwap Support" <${emailFrom}>`,
       to: email,
       subject: 'SkillSwap - Email Verification Code',
       html: `
