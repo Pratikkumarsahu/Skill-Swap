@@ -51,6 +51,7 @@ const Register = ({ onNavigate, theme, onToggleTheme }) => {
         skillsNeeded: neededArray,
         bio,
       });
+      onNavigate('verify-otp', email);
     } catch (err) {
       setError(err.message || 'Registration failed. Check details.');
     } finally {

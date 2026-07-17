@@ -20,7 +20,11 @@ const Login = ({ onNavigate, theme, onToggleTheme }) => {
     try {
       await login(email, password);
     } catch (err) {
-      setError(err.message || 'Invalid email or password');
+      if (err.isVerified === false) {
+        onNavigate('verify-otp', err.email);
+      } else {
+        setError(err.message || 'Invalid email or password');
+      }
     } finally {
       setLoading(false);
     }

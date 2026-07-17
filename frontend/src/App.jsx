@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import VerifyOtp from './pages/VerifyOtp';
 import Dashboard from './pages/Dashboard';
 import Explore from './pages/Explore';
 import Chat from './pages/Chat';
@@ -20,6 +21,9 @@ function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [authPage, setAuthPage] = useState('landing');
   
+  // Email to verify via OTP
+  const [verificationEmail, setVerificationEmail] = useState('');
+  
   // Triggers opening chat room directly from explore match search clicks
   const [selectChatUserId, setSelectChatUserId] = useState(null);
 
@@ -28,6 +32,14 @@ function App() {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
     localStorage.setItem('theme', newTheme);
+  };
+
+  // Safe navigation handler for unauthenticated pages that supports emails
+  const handleAuthNavigate = (page, email = '') => {
+    if (email) {
+      setVerificationEmail(email);
+    }
+    setAuthPage(page);
   };
 
   if (loading) {
@@ -41,22 +53,34 @@ function App() {
     );
   }
 
-  // Not authenticated routing (Landing, Login, Register)
+  // Not authenticated routing (Landing, Login, Register, VerifyOtp)
   if (!user) {
     if (authPage === 'landing') {
       return (
         <div className={`min-h-screen ${theme}`}>
-          <Landing onNavigate={setAuthPage} theme={theme} onToggleTheme={toggleTheme} />
+          <Landing onNavigate={handleAuthNavigate} theme={theme} onToggleTheme={toggleTheme} />
+        </div>
+      );
+    }
+    if (authPage === 'verify-otp') {
+      return (
+        <div className={`min-h-screen ${theme}`}>
+          <VerifyOtp
+            email={verificationEmail}
+            onNavigate={handleAuthNavigate}
+            theme={theme}
+            onToggleTheme={toggleTheme}
+          />
         </div>
       );
     }
     return authPage === 'login' ? (
       <div className={`min-h-screen ${theme}`}>
-        <Login onNavigate={setAuthPage} theme={theme} onToggleTheme={toggleTheme} />
+        <Login onNavigate={handleAuthNavigate} theme={theme} onToggleTheme={toggleTheme} />
       </div>
     ) : (
       <div className={`min-h-screen ${theme}`}>
-        <Register onNavigate={setAuthPage} theme={theme} onToggleTheme={toggleTheme} />
+        <Register onNavigate={handleAuthNavigate} theme={theme} onToggleTheme={toggleTheme} />
       </div>
     );
   }

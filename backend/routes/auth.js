@@ -1,16 +1,17 @@
-// Route handlers for Authentication
+// Route handlers for Authentication with Email OTP verification support
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import { protect } from '../middleware/auth.js';
+import { sendOtpEmail } from '../utils/email.js';
 
 const router = express.Router();
 
 // Helper function to create a JSON Web Token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '30d', // Expires in 30 days
+    expiresIn: '30d',
   });
 };
 
@@ -30,10 +31,14 @@ router.post('/register', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // 3. Create a default avatar image url using ui-avatars API
+    // 3. Create a default avatar image url
     const initialAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&size=128`;
 
-    // 4. Save the user to MongoDB
+    // 4. Generate 6-digit OTP code and set expiry to 10 minutes
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiry = Date.now() + 10 * 60 * 1000;
+
+    // 5. Save the user to MongoDB as unverified
     const user = await User.create({
       name,
       email,
@@ -42,23 +47,19 @@ router.post('/register', async (req, res) => {
       skillsNeeded: skillsNeeded || [],
       bio: bio || '',
       avatar: initialAvatar,
+      isVerified: false,
+      otp,
+      otpExpiry,
     });
 
-    // 5. Send back user data along with JWT token
     if (user) {
+      // Send the OTP email (falls back to console logging if credentials not set)
+      await sendOtpEmail(email, otp);
+
       res.status(201).json({
-        _id: user._id,
-        name: user.name,
+        message: 'Registration successful. Verification OTP sent to email.',
         email: user.email,
-        skillsOffered: user.skillsOffered,
-        skillsNeeded: user.skillsNeeded,
-        bio: user.bio,
-        avatar: user.avatar,
-        averageRating: user.averageRating,
-        reviewCount: user.reviewCount,
-        isAdmin: user.isAdmin,
-        warnings: user.warnings,
-        token: generateToken(user._id),
+        isVerified: false,
       });
     } else {
       res.status(400).json({ message: 'Failed to create user' });
@@ -78,8 +79,24 @@ router.post('/login', async (req, res) => {
     // Find the user and explicitly select their password for comparison
     const user = await User.findOne({ email }).select('+password');
 
-    // Compare passwords and login if it matches
     if (user && (await bcrypt.compare(password, user.password))) {
+      // Check if account is verified
+      if (!user.isVerified) {
+        // Generate new OTP and send it
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        user.otp = otp;
+        user.otpExpiry = Date.now() + 10 * 60 * 1000;
+        await user.save();
+
+        await sendOtpEmail(user.email, otp);
+
+        return res.status(401).json({
+          message: 'Account not verified. Please verify your email.',
+          email: user.email,
+          isVerified: false,
+        });
+      }
+
       res.json({
         _id: user._id,
         name: user.name,
@@ -100,6 +117,87 @@ router.post('/login', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server Error during login' });
+  }
+});
+
+// Route to verify OTP code
+// POST /api/auth/verify-otp
+router.post('/verify-otp', async (req, res) => {
+  const { email, otp } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ message: 'User is already verified.' });
+    }
+
+    // Check if code matches
+    if (user.otp !== otp) {
+      return res.status(400).json({ message: 'Invalid verification code.' });
+    }
+
+    // Check if expired
+    if (new Date() > user.otpExpiry) {
+      return res.status(400).json({ message: 'Verification code has expired. Please request a new one.' });
+    }
+
+    // Mark as verified
+    user.isVerified = true;
+    user.otp = null;
+    user.otpExpiry = null;
+    await user.save();
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      skillsOffered: user.skillsOffered,
+      skillsNeeded: user.skillsNeeded,
+      bio: user.bio,
+      avatar: user.avatar,
+      averageRating: user.averageRating,
+      reviewCount: user.reviewCount,
+      isAdmin: user.isAdmin,
+      warnings: user.warnings,
+      token: generateToken(user._id),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error verifying OTP.' });
+  }
+});
+
+// Route to resend OTP code
+// POST /api/auth/resend-otp
+router.post('/resend-otp', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ message: 'User is already verified.' });
+    }
+
+    // Generate new OTP code and save
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.otp = otp;
+    user.otpExpiry = Date.now() + 10 * 60 * 1000;
+    await user.save();
+
+    await sendOtpEmail(email, otp);
+
+    res.json({ message: 'New verification code sent successfully.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error resending OTP.' });
   }
 });
 

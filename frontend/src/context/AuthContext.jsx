@@ -1,4 +1,4 @@
-// Context provider for User Authentication state
+// Context provider for User Authentication state supporting OTP email verification
 import React, { createContext, useState, useEffect, useContext } from 'react';
 
 const AuthContext = createContext();
@@ -60,6 +60,13 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
 
       if (!response.ok) {
+        // If unverified, throw a special error object
+        if (response.status === 401 && data.isVerified === false) {
+          const verifyErr = new Error(data.message || 'Verification required');
+          verifyErr.isVerified = false;
+          verifyErr.email = data.email;
+          throw verifyErr;
+        }
         throw new Error(data.message || 'Login failed');
       }
 
@@ -91,15 +98,19 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.message || 'Registration failed');
       }
 
-      // Save token to local storage and state
-      localStorage.setItem('token', data.token);
-      setToken(data.token);
-      setUser(data);
+      // Do NOT set user or token to state yet because they are unverified
       return data;
     } catch (error) {
       console.error('Registration error:', error);
       throw error;
     }
+  };
+
+  // Handle completing login after successful OTP verification
+  const verifyOtp = (data) => {
+    localStorage.setItem('token', data.token);
+    setToken(data.token);
+    setUser(data);
   };
 
   // Update profile details handler
@@ -145,6 +156,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     register,
+    verifyOtp,
     logout,
     updateProfile,
     API_URL,

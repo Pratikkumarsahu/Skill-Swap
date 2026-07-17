@@ -41,6 +41,7 @@ const seedData = async () => {
         bio: 'Official administration account for the SkillSwap peer network.',
         avatar: 'https://ui-avatars.com/api/?name=System+Admin&background=ef4444&color=fff&size=128',
         isAdmin: true,
+        isVerified: true,
       },
       {
         name: 'Alice Vance',
@@ -50,6 +51,7 @@ const seedData = async () => {
         skillsNeeded: ['Figma', 'UI/UX', 'Spanish'],
         bio: 'Computer Science major at Stanford. Love coding, open-source, and coffee. Happy to teach web development or Python script basics!',
         avatar: 'https://ui-avatars.com/api/?name=Alice+Vance&background=f472b6&color=fff&size=128',
+        isVerified: true,
       },
       {
         name: 'Bob Miller',
@@ -59,6 +61,7 @@ const seedData = async () => {
         skillsNeeded: ['Python', 'React', 'Guitar'],
         bio: 'Graphic Design student. Passionate about interfaces, wireframes, and vector illustration. Wanting to learn coding to build prototypes.',
         avatar: 'https://ui-avatars.com/api/?name=Bob+Miller&background=60a5fa&color=fff&size=128',
+        isVerified: true,
       },
       {
         name: 'Carlos Santana',
@@ -68,6 +71,7 @@ const seedData = async () => {
         skillsNeeded: ['Python', 'Photography'],
         bio: 'Music major and native Spanish speaker from Madrid. Can teach you classical/acoustic guitar techniques and conversational Spanish.',
         avatar: 'https://ui-avatars.com/api/?name=Carlos+Santana&background=34d399&color=fff&size=128',
+        isVerified: true,
       },
       {
         name: 'Diana Prince',
@@ -77,6 +81,7 @@ const seedData = async () => {
         skillsNeeded: ['Figma', 'Cooking'],
         bio: 'Freelance photographer and digital editor. Fluent in French. Looking to improve design tool skills and learn basic culinary skills!',
         avatar: 'https://ui-avatars.com/api/?name=Diana+Prince&background=fbbf24&color=fff&size=128',
+        isVerified: true,
       },
       {
         name: 'Evan Wright',
@@ -86,6 +91,7 @@ const seedData = async () => {
         skillsNeeded: ['JavaScript', 'French'],
         bio: 'Culinary arts student and debate club leader. Happy to share gourmet cooking secrets, sourdough baking, or speech drafting guides.',
         avatar: 'https://ui-avatars.com/api/?name=Evan+Wright&background=a78bfa&color=fff&size=128',
+        isVerified: true,
       },
     ];
 
