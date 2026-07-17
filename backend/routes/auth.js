@@ -3,6 +3,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
+import dns from 'dns/promises';
 import User from '../models/User.js';
 import { protect } from '../middleware/auth.js';
 import { sendOtpEmail } from '../utils/email.js';
@@ -258,13 +259,27 @@ router.get('/test-email', async (req, res) => {
   const emailPass = process.env.EMAIL_PASS;
 
   try {
+    let hostAddress = 'smtp.gmail.com';
+    try {
+      const ips = await dns.resolve4('smtp.gmail.com');
+      if (ips && ips.length > 0) {
+        hostAddress = ips[0];
+      }
+    } catch (dnsErr) {
+      console.warn('[SMTP DNS] Failed to resolve smtp.gmail.com over IPv4, falling back to hostname:', dnsErr.message);
+    }
+
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
+      host: hostAddress,
       port: 587,
       secure: false,
       auth: {
         user: emailUser,
         pass: emailPass,
+      },
+      tls: {
+        rejectUnauthorized: false,
+        servername: 'smtp.gmail.com',
       },
     });
 

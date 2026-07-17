@@ -1,5 +1,6 @@
 // Helper utility for sending email verification codes via Nodemailer or printing to logs
 import nodemailer from 'nodemailer';
+import dns from 'dns/promises';
 
 export const sendOtpEmail = async (email, otp) => {
   const emailUser = process.env.EMAIL_USER;
@@ -18,14 +19,30 @@ export const sendOtpEmail = async (email, otp) => {
   }
 
   try {
+    // Dynamically resolve smtp.gmail.com to IPv4 address to bypass Render's IPv6 outbound socket errors
+    let hostAddress = 'smtp.gmail.com';
+    try {
+      const ips = await dns.resolve4('smtp.gmail.com');
+      if (ips && ips.length > 0) {
+        hostAddress = ips[0];
+        console.log(`[SMTP DNS] Dynamically resolved smtp.gmail.com to IPv4: ${hostAddress}`);
+      }
+    } catch (dnsErr) {
+      console.warn('[SMTP DNS] Failed to resolve smtp.gmail.com over IPv4, falling back to hostname:', dnsErr.message);
+    }
+
     // Setup transporter using Gmail SMTP over IPv4 / Port 587 (TLS)
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
+      host: hostAddress,
       port: 587,
       secure: false, // true for 465, false for 587
       auth: {
         user: emailUser,
         pass: emailPass, // App password
+      },
+      tls: {
+        rejectUnauthorized: false,
+        servername: 'smtp.gmail.com', // Crucial to match TLS SNI certificate
       },
     });
 
