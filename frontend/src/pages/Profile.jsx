@@ -74,6 +74,20 @@ const Profile = () => {
     setSkillsNeeded(skillsNeeded.filter((_, idx) => idx !== indexToRemove));
   };
 
+  const handleKeyDownOffered = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddOfferedSkill(e);
+    }
+  };
+
+  const handleKeyDownNeeded = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddNeededSkill(e);
+    }
+  };
+
   // Save profile updates to database
   const handleSave = async (e) => {
     e.preventDefault();
@@ -165,11 +179,15 @@ const Profile = () => {
 
               {/* Bio */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                  Biography / Bio
-                </label>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    Biography / Bio
+                  </label>
+                  <span className="text-[10px] text-slate-500 font-semibold">{bio.length} / 300 chars</span>
+                </div>
                 <textarea
                   rows={4}
+                  maxLength={300}
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   placeholder="Tell your peers who you are..."
@@ -204,6 +222,7 @@ const Profile = () => {
                     type="text"
                     value={newOfferedSkill}
                     onChange={(e) => setNewOfferedSkill(e.target.value)}
+                    onKeyDown={handleKeyDownOffered}
                     placeholder="Add a skill you can teach (e.g. Python)"
                     className="flex-1 px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500"
                   />
@@ -244,6 +263,7 @@ const Profile = () => {
                     type="text"
                     value={newNeededSkill}
                     onChange={(e) => setNewNeededSkill(e.target.value)}
+                    onKeyDown={handleKeyDownNeeded}
                     placeholder="Add a skill you want to learn (e.g. Figma)"
                     className="flex-1 px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500"
                   />

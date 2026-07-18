@@ -16,6 +16,40 @@ import {
   ChevronRight,
 } from 'lucide-react';
 
+// Animated count-up helper to make numbers count up dynamically on load
+const AnimatedCounter = ({ value, duration = 800, isFloat = false }) => {
+  const [count, setCount] = React.useState(0);
+
+  React.useEffect(() => {
+    let start = 0;
+    const end = parseFloat(value);
+    if (isNaN(end) || end === 0) {
+      setCount(value);
+      return;
+    }
+
+    const totalFrames = 50;
+    const frameDuration = duration / totalFrames;
+    const increment = end / totalFrames;
+
+    let currentFrame = 0;
+    const timer = setInterval(() => {
+      currentFrame++;
+      start += increment;
+      if (currentFrame >= totalFrames) {
+        clearInterval(timer);
+        setCount(isFloat ? end.toFixed(1) : Math.round(end));
+      } else {
+        setCount(isFloat ? start.toFixed(1) : Math.round(start));
+      }
+    }, frameDuration);
+
+    return () => clearInterval(timer);
+  }, [value, duration, isFloat]);
+
+  return <span>{count}</span>;
+};
+
 const Dashboard = ({ onNavigate, setSelectChatUserId }) => {
   const { user, token, API_URL } = useAuth();
   const [matches, setMatches] = useState([]);
@@ -255,7 +289,9 @@ const Dashboard = ({ onNavigate, setSelectChatUserId }) => {
           </div>
           <div>
             <span className="block text-xs font-medium text-slate-500 uppercase tracking-wider">Hours Swapped</span>
-            <span className="text-2xl font-bold text-white mt-0.5">{hoursSwapped.toFixed(1)}h</span>
+            <span className="text-2xl font-bold text-white mt-0.5">
+              <AnimatedCounter value={hoursSwapped} isFloat={true} />h
+            </span>
           </div>
         </div>
 
@@ -267,7 +303,13 @@ const Dashboard = ({ onNavigate, setSelectChatUserId }) => {
           <div>
             <span className="block text-xs font-medium text-slate-500 uppercase tracking-wider">Average Rating</span>
             <span className="text-2xl font-bold text-white mt-0.5">
-              {rating > 0 ? `${rating} ★` : 'N/A'}
+              {rating > 0 ? (
+                <>
+                  <AnimatedCounter value={rating} isFloat={true} /> ★
+                </>
+              ) : (
+                'N/A'
+              )}
             </span>
           </div>
         </div>
@@ -280,7 +322,7 @@ const Dashboard = ({ onNavigate, setSelectChatUserId }) => {
           <div>
             <span className="block text-xs font-medium text-slate-500 uppercase tracking-wider">Perfect Matches</span>
             <span className="text-2xl font-bold text-white mt-0.5">
-              {matches.filter((m) => m.matchType === 'perfect').length}
+              <AnimatedCounter value={matches.filter((m) => m.matchType === 'perfect').length} />
             </span>
           </div>
         </div>
@@ -292,7 +334,9 @@ const Dashboard = ({ onNavigate, setSelectChatUserId }) => {
           </div>
           <div>
             <span className="block text-xs font-medium text-slate-500 uppercase tracking-wider">Completed Swaps</span>
-            <span className="text-2xl font-bold text-white mt-0.5">{completedSessions.length}</span>
+            <span className="text-2xl font-bold text-white mt-0.5">
+              <AnimatedCounter value={completedSessions.length} />
+            </span>
           </div>
         </div>
       </div>

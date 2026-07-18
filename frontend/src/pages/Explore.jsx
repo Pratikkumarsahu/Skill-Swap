@@ -29,6 +29,7 @@ const Explore = ({ onNavigate, setSelectChatUserId }) => {
   const [reportLoading, setReportLoading] = useState(false);
   const [reportSuccess, setReportSuccess] = useState(false);
   const [reportError, setReportError] = useState('');
+  const [animateBars, setAnimateBars] = useState(false);
 
   // Fetch match explore list on load
   const fetchMatches = async () => {
@@ -47,6 +48,8 @@ const Explore = ({ onNavigate, setSelectChatUserId }) => {
 
   useEffect(() => {
     fetchMatches();
+    const animTimer = setTimeout(() => setAnimateBars(true), 150);
+    return () => clearTimeout(animTimer);
   }, [token, API_URL]);
 
   // Open Chat Room
@@ -314,10 +317,10 @@ const Explore = ({ onNavigate, setSelectChatUserId }) => {
                   </div>
                   <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-850">
                     <div
-                      className={`h-full rounded-full ${
+                      className={`h-full rounded-full transition-all duration-1000 ease-out ${
                         match.matchType === 'perfect' ? 'bg-emerald-500' : 'bg-indigo-500'
                       }`}
-                      style={{ width: `${match.score}%` }}
+                      style={{ width: animateBars ? `${match.score}%` : '0%' }}
                     />
                   </div>
                 </div>

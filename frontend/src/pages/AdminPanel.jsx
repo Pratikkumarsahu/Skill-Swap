@@ -665,11 +665,15 @@ const AdminPanel = () => {
 
             <form onSubmit={handleSendWarning} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">
-                  Reason / Warning Content
-                </label>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-xs font-semibold text-slate-400 uppercase">
+                    Reason / Warning Content
+                  </label>
+                  <span className="text-[10px] text-slate-500 font-semibold">{warningReason.length} / 200 chars</span>
+                </div>
                 <textarea
                   rows={4}
+                  maxLength={200}
                   required
                   value={warningReason}
                   onChange={(e) => setWarningReason(e.target.value)}
@@ -737,11 +741,15 @@ const AdminPanel = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">
-                  Reason for Block
-                </label>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-xs font-semibold text-slate-400 uppercase">
+                    Reason for Block
+                  </label>
+                  <span className="text-[10px] text-slate-500 font-semibold">{blockReason.length} / 200 chars</span>
+                </div>
                 <textarea
                   rows={3}
+                  maxLength={200}
                   required
                   value={blockReason}
                   onChange={(e) => setBlockReason(e.target.value)}
