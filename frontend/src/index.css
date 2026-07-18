@@ -1,6 +1,35 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
+/* ==========================================================================
+   TAILWIND V4 THEME REMAPPING (INDIGO ➜ EMERALD GREEN, VIOLET ➜ TEAL)
+   ========================================================================== */
+@theme {
+  --color-indigo-50: var(--color-emerald-50);
+  --color-indigo-100: var(--color-emerald-100);
+  --color-indigo-200: var(--color-emerald-200);
+  --color-indigo-300: var(--color-emerald-300);
+  --color-indigo-400: var(--color-emerald-400);
+  --color-indigo-500: var(--color-emerald-500);
+  --color-indigo-600: var(--color-emerald-600);
+  --color-indigo-700: var(--color-emerald-700);
+  --color-indigo-800: var(--color-emerald-800);
+  --color-indigo-900: var(--color-emerald-900);
+  --color-indigo-950: var(--color-emerald-950);
+
+  --color-violet-50: var(--color-teal-50);
+  --color-violet-100: var(--color-teal-100);
+  --color-violet-200: var(--color-teal-200);
+  --color-violet-300: var(--color-teal-300);
+  --color-violet-400: var(--color-teal-400);
+  --color-violet-500: var(--color-teal-500);
+  --color-violet-600: var(--color-teal-600);
+  --color-violet-700: var(--color-teal-700);
+  --color-violet-800: var(--color-teal-800);
+  --color-violet-900: var(--color-teal-900);
+  --color-violet-950: var(--color-teal-950);
+}
+
 :root {
   font-family: 'Inter', sans-serif;
 }
@@ -45,9 +74,9 @@ body {
   background-color: rgba(241, 245, 249, 0.6) !important;
 }
 
-/* Banners and stats blocks */
+/* Banners and stats blocks (Updated to green themes) */
 .light .bg-indigo-900\/40 {
-  background-color: #e0e7ff !important;
+  background-color: #d1fae5 !important; /* light green */
 }
 
 .light .bg-red-950\/20 {
@@ -60,7 +89,7 @@ body {
 
 .light .bg-indigo-500\/10,
 .light .bg-indigo-600\/10 {
-  background-color: #e0e7ff !important;
+  background-color: #d1fae5 !important;
 }
 
 .light .bg-amber-500\/10 {
@@ -99,9 +128,9 @@ body {
   color: #64748b !important;
 }
 
-/* Custom highlighted text inside cards */
+/* Custom highlighted text inside cards (Updated to green/emerald) */
 .light .text-indigo-400 {
-  color: #4f46e5 !important;
+  color: #059669 !important; /* emerald-600 */
 }
 
 .light .text-emerald-400 {
