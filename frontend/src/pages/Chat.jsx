@@ -338,19 +338,27 @@ const Chat = ({ selectChatUserId, setSelectChatUserId }) => {
               <div ref={messagesEndRef} />
             </div>
 
+            {/* Block status alert inside chat window */}
+            {user?.isBlockedUntil && new Date(user.isBlockedUntil) > new Date() && (
+              <div className="px-5 py-2.5 bg-red-950/20 border-t border-b border-red-900/30 text-red-400 text-[10px] font-semibold">
+                ⚠️ Your account is temporarily blocked from sending messages until {new Date(user.isBlockedUntil).toLocaleString()}. Reason: {user.blockReason}
+              </div>
+            )}
+
             {/* Message input form */}
             <form onSubmit={handleSendMessage} className="p-5 border-t border-slate-800 bg-slate-900">
               <div className="flex items-center gap-3">
                 <input
                   type="text"
+                  disabled={user?.isBlockedUntil && new Date(user.isBlockedUntil) > new Date()}
                   value={newMessage}
                   onChange={handleMessageChange}
-                  placeholder={`Send message...`}
-                  className="w-full py-3 bg-slate-950 border border-slate-800 focus:outline-none px-4 rounded-xl text-xs text-white"
+                  placeholder={user?.isBlockedUntil && new Date(user.isBlockedUntil) > new Date() ? "You are temporarily blocked from sending messages..." : "Send message..."}
+                  className="w-full py-3 bg-slate-950 border border-slate-800 focus:outline-none px-4 rounded-xl text-xs text-white disabled:opacity-50"
                 />
                 <button
                   type="submit"
-                  disabled={!newMessage.trim()}
+                  disabled={!newMessage.trim() || (user?.isBlockedUntil && new Date(user.isBlockedUntil) > new Date())}
                   className="p-3 bg-indigo-600 hover:bg-indigo-750 text-white rounded-xl disabled:opacity-50"
                 >
                   <Send className="w-4 h-4" />

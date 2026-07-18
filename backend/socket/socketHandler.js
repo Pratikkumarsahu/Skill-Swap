@@ -1,5 +1,6 @@
 // Socket.io handlers for real-time chat operations
 import Message from '../models/Message.js';
+import User from '../models/User.js';
 
 // Dictionary mapping: userId -> socketId (tracks who is currently online)
 const onlineUsers = new Map();
@@ -33,6 +34,15 @@ const socketHandler = (io) => {
       const roomName = [senderId, receiverId].sort().join('_');
 
       try {
+        // Enforce user block verification check
+        const senderObj = await User.findById(senderId);
+        if (senderObj && senderObj.isBlockedUntil && new Date(senderObj.isBlockedUntil) > new Date()) {
+          socket.emit('error_message', {
+            message: `Your account is temporarily blocked from sending messages until ${new Date(senderObj.isBlockedUntil).toLocaleString()}. Reason: ${senderObj.blockReason || 'None'}`,
+          });
+          return;
+        }
+
         // 1. Save the new message to MongoDB
         const message = await Message.create({
           sender: senderId,

@@ -85,6 +85,22 @@ const Dashboard = ({ onNavigate, setSelectChatUserId }) => {
 
   return (
     <div className="flex-1 bg-slate-950 p-8 overflow-y-auto">
+      {/* Block Status Banner Alert */}
+      {user?.isBlockedUntil && new Date(user.isBlockedUntil) > new Date() && (
+        <div className="mb-6 p-5 rounded-xl bg-red-950/20 border border-red-900/30 text-red-400 text-xs space-y-2">
+          <h4 className="font-extrabold text-sm flex items-center gap-1.5 text-red-450 uppercase tracking-wider">
+            <span>🚫</span> Your Account is Temporarily Blocked
+          </h4>
+          <p className="text-slate-300 leading-relaxed">
+            An administrator has temporarily restricted your account from sending messages and proposing swaps.
+          </p>
+          <div className="text-[10px] text-slate-500 font-semibold space-y-1">
+            <div>Reason: <span className="text-slate-300 font-medium">{user.blockReason || 'No reason specified'}</span></div>
+            <div>Block Expires: <span className="text-slate-300 font-medium">{new Date(user.isBlockedUntil).toLocaleString()}</span></div>
+          </div>
+        </div>
+      )}
+
       {/* Warnings Banner Alert */}
       {user?.warnings && user.warnings.length > 0 && (
         <div className="mb-6 p-4 rounded-xl bg-red-950/20 border border-red-900/30 text-red-400 text-xs space-y-2">
@@ -330,15 +346,18 @@ const Dashboard = ({ onNavigate, setSelectChatUserId }) => {
 
                   <div className="flex items-center gap-2 self-end md:self-center">
                     <button
+                      disabled={user?.isBlockedUntil && new Date(user.isBlockedUntil) > new Date()}
                       onClick={() => handleStartChat(match.user._id)}
-                      className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl"
-                      title="Send Message"
+                      className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                      title={user?.isBlockedUntil && new Date(user.isBlockedUntil) > new Date() ? `Your account is temporarily blocked: ${user.blockReason}` : "Send Message"}
                     >
                       <MessageSquare className="w-4 h-4" />
                     </button>
                     <button
+                      disabled={user?.isBlockedUntil && new Date(user.isBlockedUntil) > new Date()}
                       onClick={() => onNavigate('explore')}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-4 py-2.5 rounded-xl"
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-4 py-2.5 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                      title={user?.isBlockedUntil && new Date(user.isBlockedUntil) > new Date() ? `Your account is temporarily blocked: ${user.blockReason}` : "Propose Swap"}
                     >
                       Propose Swap
                     </button>

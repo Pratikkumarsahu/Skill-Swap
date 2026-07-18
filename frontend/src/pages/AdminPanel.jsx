@@ -34,6 +34,12 @@ const AdminPanel = () => {
   const [warningReason, setWarningReason] = useState('');
   const [warningSending, setWarningSending] = useState(false);
 
+  // Block modal controls
+  const [blockingTargetUser, setBlockingTargetUser] = useState(null);
+  const [blockDurationMinutes, setBlockDurationMinutes] = useState(60); // 60 mins default
+  const [blockReason, setBlockReason] = useState('');
+  const [blockSending, setBlockSending] = useState(false);
+
   // Chat auditing logs viewer controls
   const [activeConversation, setActiveConversation] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
@@ -157,6 +163,93 @@ const AdminPanel = () => {
       showBanner(err.message, 'error');
     } finally {
       setWarningSending(false);
+    }
+  };
+
+  // Reduce warning count (Removes the latest warning)
+  const handleReduceWarning = async (userId) => {
+    try {
+      const response = await fetch(`${API_URL}/admin/users/${userId}/warning/reduce`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to reduce warning');
+      }
+
+      showBanner('Warning count reduced successfully.');
+      fetchUsers(); // Refresh listings to see warnings updated
+    } catch (err) {
+      showBanner(err.message, 'error');
+    }
+  };
+
+  // Submit Block Request
+  const handleBlockUser = async (e) => {
+    e.preventDefault();
+    if (!blockingTargetUser) return;
+    setBlockSending(true);
+
+    try {
+      const response = await fetch(`${API_URL}/admin/users/${blockingTargetUser._id}/block`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          durationMinutes: parseInt(blockDurationMinutes),
+          reason: blockReason.trim(),
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to block user');
+      }
+
+      showBanner(blockDurationMinutes === 0 ? `User ${blockingTargetUser.name} unblocked.` : `User ${blockingTargetUser.name} blocked successfully.`);
+      setBlockingTargetUser(null);
+      setBlockReason('');
+      setBlockDurationMinutes(60);
+      fetchUsers(); // Refresh listings to see status update
+    } catch (err) {
+      showBanner(err.message, 'error');
+    } finally {
+      setBlockSending(false);
+    }
+  };
+
+  // Quick toggle block state (unblock)
+  const handleToggleBlockState = async (userObj, durationMinutesVal = 0) => {
+    if (durationMinutesVal === 0 && !window.confirm(`Are you sure you want to unblock ${userObj.name}?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/admin/users/${userObj._id}/block`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          durationMinutes: durationMinutesVal,
+          reason: 'Unblocked by admin',
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to update user block status');
+      }
+
+      showBanner(`User ${userObj.name} unblocked successfully.`);
+      fetchUsers(); // Refresh listings
+    } catch (err) {
+      showBanner(err.message, 'error');
     }
   };
 
@@ -326,12 +419,40 @@ const AdminPanel = () => {
                       <td className="p-4 text-right space-x-2">
                         {!u.isAdmin && (
                           <>
+                            {u.warnings.length > 0 && (
+                              <button
+                                onClick={() => handleReduceWarning(u._id)}
+                                className="px-2.5 py-1 border border-emerald-500/20 hover:bg-emerald-500/10 text-emerald-450 rounded-lg text-[10px] font-semibold transition-colors align-middle"
+                                title="Remove the latest warning"
+                              >
+                                Forgive
+                              </button>
+                            )}
                             <button
                               onClick={() => setWarningTargetUser(u)}
-                              className="px-2.5 py-1 border border-amber-500/20 hover:bg-amber-500/10 text-amber-400 rounded-lg text-[10px] font-semibold transition-colors"
+                              className="px-2.5 py-1 border border-amber-500/20 hover:bg-amber-500/10 text-amber-400 rounded-lg text-[10px] font-semibold transition-colors align-middle"
                             >
                               Warn User
                             </button>
+                            {u.isBlockedUntil && new Date(u.isBlockedUntil) > new Date() ? (
+                              <button
+                                onClick={() => handleToggleBlockState(u, 0)}
+                                className="px-2.5 py-1 border border-emerald-500/20 hover:bg-emerald-500/10 text-emerald-450 rounded-lg text-[10px] font-semibold transition-colors align-middle"
+                                title={`Blocked reason: ${u.blockReason}`}
+                              >
+                                Unblock
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setBlockingTargetUser(u);
+                                  setBlockDurationMinutes(60);
+                                }}
+                                className="px-2.5 py-1 border border-red-500/20 hover:bg-red-500/10 text-red-400 rounded-lg text-[10px] font-semibold transition-colors align-middle"
+                              >
+                                Block
+                              </button>
+                            )}
                             <button
                               onClick={() => handleDeleteUser(u._id)}
                               className="p-1 border border-red-500/20 hover:bg-red-500/10 text-red-400 rounded-lg inline-flex items-center transition-colors align-middle"
@@ -571,6 +692,78 @@ const AdminPanel = () => {
                   className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-xl"
                 >
                   {warningSending ? 'Sending...' : 'Send Warning'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Block user popup Dialog Modal */}
+      {blockingTargetUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 relative shadow-2xl">
+            <button
+              onClick={() => setBlockingTargetUser(null)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-200 transition-colors"
+            >
+              Cancel
+            </button>
+
+            <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-1.5">
+              <AlertTriangle className="w-5 h-5 text-red-500" />
+              Temporarily Block User
+            </h3>
+            <p className="text-xs text-slate-400 mb-5">
+              Prohibit <span className="text-red-400 font-semibold">{blockingTargetUser.name}</span> from sending messages and proposing swaps.
+            </p>
+
+            <form onSubmit={handleBlockUser} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">
+                  Block Duration
+                </label>
+                <select
+                  value={blockDurationMinutes}
+                  onChange={(e) => setBlockDurationMinutes(parseInt(e.target.value))}
+                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:outline-none"
+                >
+                  <option value={60}>1 Hour</option>
+                  <option value={1440}>1 Day (24 Hours)</option>
+                  <option value={10080}>1 Week</option>
+                  <option value={43200}>1 Month (30 Days)</option>
+                  <option value={525600 * 30}>Permanent (30 Years)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">
+                  Reason for Block
+                </label>
+                <textarea
+                  rows={3}
+                  required
+                  value={blockReason}
+                  onChange={(e) => setBlockReason(e.target.value)}
+                  placeholder="Specify violation (e.g. offensive language, scam attempt...)"
+                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs placeholder-slate-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex gap-3 justify-end pt-3">
+                <button
+                  type="button"
+                  onClick={() => setBlockingTargetUser(null)}
+                  className="px-4 py-2 border border-slate-800 text-slate-300 hover:bg-slate-800 text-xs font-semibold rounded-xl"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={blockSending}
+                  className="px-5 py-2 bg-red-650 hover:bg-red-750 text-white text-xs font-semibold rounded-xl font-bold"
+                >
+                  {blockSending ? 'Blocking...' : 'Block Member'}
                 </button>
               </div>
             </form>

@@ -29,6 +29,13 @@ router.post('/', protect, async (req, res) => {
   const { receiver, offeredSkill, receivedSkill, sessionDate, duration } = req.body;
 
   try {
+    // Check if sender is temporarily blocked by admin
+    if (req.user.isBlockedUntil && new Date(req.user.isBlockedUntil) > new Date()) {
+      return res.status(403).json({
+        message: `Your account is temporarily blocked from proposing swaps until ${new Date(req.user.isBlockedUntil).toLocaleString()}. Reason: ${req.user.blockReason || 'None'}`,
+      });
+    }
+
     // Check if user is proposing to swap with themselves
     if (req.user._id.toString() === receiver) {
       return res.status(400).json({ message: 'You cannot swap skills with yourself!' });

@@ -86,6 +86,60 @@ router.post('/users/:id/warning', protect, adminProtect, async (req, res) => {
   }
 });
 
+// 3.5. Reduce/Remove the latest warning of any user
+// POST /api/admin/users/:id/warning/reduce
+router.post('/users/:id/warning/reduce', protect, adminProtect, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    if (user.warnings.length > 0) {
+      user.warnings.pop(); // Remove the latest warning record
+      await user.save();
+    }
+
+    res.json({ message: 'Warning count reduced successfully.', warnings: user.warnings });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error reducing warning.' });
+  }
+});
+
+// 3.6. Block or unblock any user account for a specific duration
+// POST /api/admin/users/:id/block
+router.post('/users/:id/block', protect, adminProtect, async (req, res) => {
+  const { durationMinutes, reason } = req.body;
+
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    if (user.isAdmin) {
+      return res.status(400).json({ message: 'Cannot block administrator accounts.' });
+    }
+
+    if (durationMinutes === 0) {
+      // Unblock user instantly
+      user.isBlockedUntil = null;
+      user.blockReason = null;
+    } else {
+      // Set future block expiration timestamp
+      user.isBlockedUntil = new Date(Date.now() + durationMinutes * 60 * 1000);
+      user.blockReason = reason ? reason.trim() : 'No reason provided';
+    }
+
+    await user.save();
+    res.json({ message: durationMinutes === 0 ? 'User unblocked successfully.' : 'User blocked successfully.', user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error updating user block status.' });
+  }
+});
+
 // 4. Get all user reports
 // GET /api/admin/reports
 router.get('/reports', protect, adminProtect, async (req, res) => {

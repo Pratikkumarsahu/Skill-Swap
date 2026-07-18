@@ -355,15 +355,19 @@ const Explore = ({ onNavigate, setSelectChatUserId }) => {
               {/* Action buttons */}
               <div className="grid grid-cols-2 gap-3 mt-6 pt-3 border-t border-slate-800">
                 <button
+                  disabled={user?.isBlockedUntil && new Date(user.isBlockedUntil) > new Date()}
                   onClick={() => handleStartChat(match.user._id)}
-                  className="flex items-center justify-center gap-2 py-2.5 bg-slate-850 border border-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-semibold"
+                  className="flex items-center justify-center gap-2 py-2.5 bg-slate-850 border border-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                  title={user?.isBlockedUntil && new Date(user.isBlockedUntil) > new Date() ? `Your account is temporarily blocked: ${user.blockReason}` : "Send Message"}
                 >
                   <MessageSquare className="w-4 h-4 text-slate-400" />
                   Message
                 </button>
                 <button
+                  disabled={user?.isBlockedUntil && new Date(user.isBlockedUntil) > new Date()}
                   onClick={() => openBookingModal(match)}
-                  className="flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold"
+                  className="flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                  title={user?.isBlockedUntil && new Date(user.isBlockedUntil) > new Date() ? `Your account is temporarily blocked: ${user.blockReason}` : "Propose Swap"}
                 >
                   <Calendar className="w-4 h-4 text-indigo-200" />
                   Propose Swap
