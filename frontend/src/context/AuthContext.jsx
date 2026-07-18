@@ -22,6 +22,12 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
+      // If user profile is already populated in memory (e.g. from login/registration), skip network request
+      if (user) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await fetch(`${API_URL}/auth/me`, {
           headers: {
@@ -44,7 +50,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     fetchUser();
-  }, [token]);
+  }, [token, user]);
 
   // Login handler
   const login = async (email, password) => {
