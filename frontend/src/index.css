@@ -79,6 +79,10 @@ body {
   background-color: #f8fafc !important;
 }
 
+.light .bg-slate-800 {
+  background-color: #e2e8f0 !important; /* Light grey for tags and icons */
+}
+
 .light .bg-slate-950\/40 {
   background-color: rgba(241, 245, 249, 0.4) !important;
 }
