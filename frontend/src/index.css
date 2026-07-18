@@ -188,3 +188,29 @@ body {
 .btn-interactive:active {
   transform: scale(0.98);
 }
+
+/* ==========================================================================
+   DATE & TIME PICKER ARROWS/ICONS VISIBILITY
+   ========================================================================== */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(1); /* Invert picker icons to white/light grey for dark background */
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.15s ease;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Day Mode (Light Theme) resets */
+.light input[type="date"]::-webkit-calendar-picker-indicator,
+.light input[type="time"]::-webkit-calendar-picker-indicator,
+.light input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: none; /* Restore default dark grey icon for light background */
+  opacity: 0.8;
+}
