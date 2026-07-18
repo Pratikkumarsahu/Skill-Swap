@@ -5,6 +5,7 @@ import { User, Star, Plus, X, Quote } from 'lucide-react';
 
 const Profile = () => {
   const { user, token, updateProfile, API_URL } = useAuth();
+  const [name, setName] = useState(user?.name || '');
   const [bio, setBio] = useState(user?.bio || '');
   const [skillsOffered, setSkillsOffered] = useState(user?.skillsOffered || []);
   const [skillsNeeded, setSkillsNeeded] = useState(user?.skillsNeeded || []);
@@ -21,6 +22,7 @@ const Profile = () => {
 
   useEffect(() => {
     if (user) {
+      setName(user.name || '');
       setBio(user.bio || '');
       setSkillsOffered(user.skillsOffered || []);
       setSkillsNeeded(user.skillsNeeded || []);
@@ -79,6 +81,11 @@ const Profile = () => {
     setSuccess(false);
     setSaving(true);
 
+    if (!name.trim()) {
+      setError('Name is required.');
+      setSaving(false);
+      return;
+    }
     if (skillsOffered.length === 0) {
       setError('Add at least one skill you can teach.');
       setSaving(false);
@@ -92,7 +99,7 @@ const Profile = () => {
 
     try {
       await updateProfile({
-        name: user.name,
+        name: name.trim(),
         bio,
         skillsOffered,
         skillsNeeded,
@@ -141,6 +148,21 @@ const Profile = () => {
             )}
 
             <form onSubmit={handleSave} className="space-y-5">
+              {/* Full Name */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter your name..."
+                  className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none"
+                />
+              </div>
+
               {/* Bio */}
               <div>
                 <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
