@@ -2,19 +2,20 @@
 @import "tailwindcss";
 
 /* ==========================================================================
-   TAILWIND V4 THEME REMAPPING (INDIGO ➜ EMERALD GREEN, VIOLET ➜ TEAL)
+   TAILWIND V4 THEME REMAPPING
    ========================================================================== */
 @theme {
+  /* Remap primary colors to a lighter/brighter emerald green */
   --color-indigo-50: var(--color-emerald-50);
   --color-indigo-100: var(--color-emerald-100);
   --color-indigo-200: var(--color-emerald-200);
   --color-indigo-300: var(--color-emerald-300);
   --color-indigo-400: var(--color-emerald-400);
   --color-indigo-500: var(--color-emerald-500);
-  --color-indigo-600: var(--color-emerald-600);
-  --color-indigo-700: var(--color-emerald-700);
-  --color-indigo-800: var(--color-emerald-800);
-  --color-indigo-900: var(--color-emerald-900);
+  --color-indigo-600: var(--color-emerald-500); /* Lighter/brighter green for main buttons & badges */
+  --color-indigo-700: var(--color-emerald-600);
+  --color-indigo-800: var(--color-emerald-700);
+  --color-indigo-900: var(--color-emerald-800);
   --color-indigo-950: var(--color-emerald-950);
 
   --color-violet-50: var(--color-teal-50);
@@ -23,11 +24,17 @@
   --color-violet-300: var(--color-teal-300);
   --color-violet-400: var(--color-teal-400);
   --color-violet-500: var(--color-teal-500);
-  --color-violet-600: var(--color-teal-600);
-  --color-violet-700: var(--color-teal-700);
-  --color-violet-800: var(--color-teal-800);
-  --color-violet-900: var(--color-teal-900);
+  --color-violet-600: var(--color-teal-500);
+  --color-violet-700: var(--color-teal-600);
+  --color-violet-800: var(--color-teal-700);
+  --color-violet-900: var(--color-teal-800);
   --color-violet-950: var(--color-teal-950);
+
+  /* Remap dark backgrounds to pure black and rich grey (Night Mode) */
+  --color-slate-950: #000000; /* Pure black background */
+  --color-slate-900: #121212; /* Rich dark grey panels and sidebar */
+  --color-slate-850: #1a1a1a; /* Medium dark grey for cards */
+  --color-slate-800: #282828; /* Borders */
 }
 
 :root {
@@ -37,8 +44,14 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: #0f172a; /* Simple dark slate background */
+  background-color: #000000; /* Default background is pure black */
   color: #f1f5f9;
+}
+
+/* Force custom slate/blue classes to match black/grey */
+.bg-\[\#070b13\],
+.bg-\[\#0f172a\] {
+  background-color: #000000 !important;
 }
 
 /* ==========================================================================
@@ -51,7 +64,7 @@ body {
   color: #1e293b !important;
 }
 
-/* Override dark panels and card wrappers to pure white */
+/* Override dark panels and card wrappers to light background */
 .light .bg-slate-950,
 .light .bg-\[\#070b13\],
 .light .bg-\[\#0f172a\] {
@@ -74,9 +87,9 @@ body {
   background-color: rgba(241, 245, 249, 0.6) !important;
 }
 
-/* Banners and stats blocks (Updated to green themes) */
+/* Banners and stats blocks (Updated to lighter soft green and high readability) */
 .light .bg-indigo-900\/40 {
-  background-color: #d1fae5 !important; /* light green */
+  background-color: #ecfdf5 !important; /* Softest green background */
 }
 
 .light .bg-red-950\/20 {
@@ -84,12 +97,12 @@ body {
 }
 
 .light .bg-emerald-500\/10 {
-  background-color: #d1fae5 !important;
+  background-color: #ecfdf5 !important;
 }
 
 .light .bg-indigo-500\/10,
 .light .bg-indigo-600\/10 {
-  background-color: #d1fae5 !important;
+  background-color: #ecfdf5 !important;
 }
 
 .light .bg-amber-500\/10 {
@@ -110,7 +123,7 @@ body {
   border-color: #cbd5e1 !important;
 }
 
-/* Text elements */
+/* Text elements - Drastically improved contrast for clear readability */
 .light .text-white,
 .light .text-slate-100,
 .light .text-slate-200 {
@@ -120,21 +133,22 @@ body {
 .light .text-slate-300,
 .light .text-slate-350,
 .light .text-slate-400 {
-  color: #334155 !important;
+  color: #1e293b !important; /* Dark Slate - high contrast */
 }
 
+.light .text-slate-555,
 .light .text-slate-550,
 .light .text-slate-500 {
-  color: #64748b !important;
+  color: #475569 !important; /* Medium Slate - high contrast */
 }
 
-/* Custom highlighted text inside cards (Updated to green/emerald) */
+/* Lighter, highly visible green text inside cards (emerald-500) */
 .light .text-indigo-400 {
-  color: #059669 !important; /* emerald-600 */
+  color: #10b981 !important; /* Bright emerald-500 */
 }
 
 .light .text-emerald-400 {
-  color: #059669 !important;
+  color: #10b981 !important;
 }
 
 .light .text-amber-400,
