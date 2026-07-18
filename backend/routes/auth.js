@@ -255,65 +255,59 @@ router.get('/test-email', async (req, res) => {
     return res.status(400).json({ message: 'Please specify an email query parameter (e.g. ?email=test@example.com)' });
   }
 
-  const emailUser = process.env.EMAIL_USER;
-  const emailPass = process.env.EMAIL_PASS;
-  const emailHost = process.env.EMAIL_HOST || 'smtp.gmail.com';
-  const emailPort = parseInt(process.env.EMAIL_PORT) || 465;
-  const emailSecure = process.env.EMAIL_SECURE !== 'false';
+  const apiKey = process.env.EMAIL_PASS;
+  const emailFrom = process.env.EMAIL_FROM;
 
   try {
-    let hostAddress = emailHost;
-    try {
-      const ips = await dns.resolve4(emailHost);
-      if (ips && ips.length > 0) {
-        hostAddress = ips[0];
-      }
-    } catch (dnsErr) {
-      console.warn(`[SMTP DNS] Failed to resolve ${emailHost} over IPv4, falling back to hostname:`, dnsErr.message);
+    if (!apiKey || !emailFrom) {
+      throw new Error('Required env credentials EMAIL_PASS or EMAIL_FROM are not configured.');
     }
 
-    const transporter = nodemailer.createTransport({
-      host: hostAddress,
-      port: emailPort,
-      secure: emailSecure,
-      auth: {
-        user: emailUser,
-        pass: emailPass,
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': apiKey,
+        'content-type': 'application/json',
       },
-      tls: {
-        rejectUnauthorized: false,
-        servername: emailHost,
-      },
+      body: JSON.stringify({
+        sender: {
+          name: 'SkillSwap Support',
+          email: emailFrom,
+        },
+        to: [
+          {
+            email: email,
+          },
+        ],
+        subject: 'SkillSwap Email Diagnostics',
+        htmlContent: '<h3>If you are reading this email, your Brevo HTTP API configuration is working perfectly!</h3>',
+      }),
     });
 
-    const emailFrom = process.env.EMAIL_FROM || emailUser;
+    const data = await response.json();
 
-    await transporter.sendMail({
-      from: `"SkillSwap Diagnostic" <${emailFrom}>`,
-      to: email,
-      subject: 'SkillSwap Email Diagnostics',
-      text: 'If you are reading this email, your Google SMTP configuration is working perfectly!',
-    });
+    if (!response.ok) {
+      throw new Error(data.message || 'Brevo HTTP API rejected the message.');
+    }
 
     res.json({
       success: true,
       message: `Diagnostic email successfully sent to ${email}`,
+      apiResponse: data,
       configUsed: {
-        EMAIL_USER: emailUser,
-        EMAIL_PASS_LENGTH: emailPass ? emailPass.length : 0,
-        EMAIL_HOST: emailHost,
-        EMAIL_PORT: emailPort,
-        EMAIL_SECURE: emailSecure,
+        EMAIL_FROM: emailFrom,
+        EMAIL_PASS_LENGTH: apiKey ? apiKey.length : 0,
       },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'SMTP Email Sending Failed',
+      message: 'Brevo HTTP API Email Sending Failed',
       errorMessage: error.message,
       configUsed: {
-        EMAIL_USER: emailUser,
-        EMAIL_PASS_LENGTH: emailPass ? emailPass.length : 0,
+        EMAIL_FROM: emailFrom,
+        EMAIL_PASS_LENGTH: apiKey ? apiKey.length : 0,
       },
     });
   }
