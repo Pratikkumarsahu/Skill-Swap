@@ -19,22 +19,28 @@ import {
 const Dashboard = ({ onNavigate, setSelectChatUserId }) => {
   const { user, token, API_URL } = useAuth();
   const [matches, setMatches] = useState([]);
+  const [allUsers, setAllUsers] = useState([]); // All database users for quick finder general lookup
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [skillSearchQuery, setSkillSearchQuery] = useState('');
 
-  // Fetch all matches and sessions on mount
+  // Fetch all matches, sessions and general users list on mount
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         const headers = { Authorization: `Bearer ${token}` };
 
-        // 1. Fetch potential matches
+        // 1. Fetch potential matches (for Recommended column)
         const matchesRes = await fetch(`${API_URL}/users/match/explore`, { headers });
         const matchesData = await matchesRes.json();
         setMatches(matchesData || []);
 
-        // 2. Fetch swap sessions history/schedule
+        // 2. Fetch all users directory (for general search finder)
+        const usersRes = await fetch(`${API_URL}/users`, { headers });
+        const usersData = await usersRes.json();
+        setAllUsers(usersData || []);
+
+        // 3. Fetch swap sessions history/schedule
         const sessionsRes = await fetch(`${API_URL}/sessions`, { headers });
         const sessionsData = await sessionsRes.json();
         setSessions(sessionsData || []);
@@ -68,17 +74,19 @@ const Dashboard = ({ onNavigate, setSelectChatUserId }) => {
     (s) => s.status === 'pending' && s.receiver._id === user._id
   );
 
-  // Filter users matching search query for the Quick Skill Finder (searches Name, UID, and Skills Offered)
+  // Filter users matching search query for the Quick Skill Finder (searches Name, UID, and Skills Offered across all users)
   const searchResults = skillSearchQuery
-    ? matches.filter((match) => {
-        const query = skillSearchQuery.toLowerCase();
-        const matchesName = match.user.name.toLowerCase().includes(query);
-        const matchesUid = match.user.uid && match.user.uid.toLowerCase().includes(query);
-        const matchesSkills = match.user.skillsOffered.some((s) =>
-          s.toLowerCase().includes(query)
-        );
-        return matchesName || matchesUid || matchesSkills;
-      })
+    ? allUsers
+        .filter((u) => {
+          const query = skillSearchQuery.toLowerCase();
+          const matchesName = u.name.toLowerCase().includes(query);
+          const matchesUid = u.uid && u.uid.toLowerCase().includes(query);
+          const matchesSkills = u.skillsOffered.some((s) =>
+            s.toLowerCase().includes(query)
+          );
+          return matchesName || matchesUid || matchesSkills;
+        })
+        .map((u) => ({ user: u })) // Wrap in { user } structure to seamlessly match renderer template
     : [];
 
   // Helper to open chat window
