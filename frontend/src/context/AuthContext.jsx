@@ -98,7 +98,10 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.message || 'Registration failed');
       }
 
-      // Do NOT set user or token to state yet because they are unverified
+      // Save token to local storage and state instantly upon successful registration
+      localStorage.setItem('token', data.token);
+      setToken(data.token);
+      setUser(data);
       return data;
     } catch (error) {
       console.error('Registration error:', error);

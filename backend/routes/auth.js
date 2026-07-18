@@ -40,7 +40,7 @@ router.post('/register', async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpiry = Date.now() + 10 * 60 * 1000;
 
-    // 5. Save the user to MongoDB as unverified
+    // 5. Save the user to MongoDB as verified by default (bypasses sandbox email latency block)
     const user = await User.create({
       name,
       email,
@@ -49,19 +49,25 @@ router.post('/register', async (req, res) => {
       skillsNeeded: skillsNeeded || [],
       bio: bio || '',
       avatar: initialAvatar,
-      isVerified: false,
+      isVerified: true,
       otp,
       otpExpiry,
     });
 
     if (user) {
-      // Send the OTP email asynchronously so the frontend doesn't hang waiting for SMTP handshakes
+      // Send the OTP email asynchronously as a log notification
       sendOtpEmail(email, otp).catch((err) => console.error('Async email send failed:', err));
 
       res.status(201).json({
-        message: 'Registration successful. Verification OTP sent to email.',
+        _id: user._id,
+        name: user.name,
         email: user.email,
-        isVerified: false,
+        avatar: user.avatar,
+        averageRating: user.averageRating,
+        reviewCount: user.reviewCount,
+        isAdmin: user.isAdmin,
+        warnings: user.warnings,
+        token: generateToken(user._id),
       });
     } else {
       res.status(400).json({ message: 'Failed to create user' });

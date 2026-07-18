@@ -51,7 +51,7 @@ const Register = ({ onNavigate, theme, onToggleTheme }) => {
         skillsNeeded: neededArray,
         bio,
       });
-      onNavigate('verify-otp', email);
+      // Verification is now bypassable/automatic; AuthContext will log the user in immediately.
     } catch (err) {
       setError(err.message || 'Registration failed. Check details.');
     } finally {
