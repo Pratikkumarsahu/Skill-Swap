@@ -20,12 +20,39 @@ import reportRoutes from './routes/reports.js';
 
 // Socket handler
 import socketHandler from './socket/socketHandler.js';
+import User from './models/User.js';
 
 // Initialize env variables
 dotenv.config();
 
+// Auto-migration helper: Generate unique 8-digit IDs for any existing database users
+const generateUidsForExistingUsers = async () => {
+  try {
+    const usersWithoutUid = await User.find({ uid: { $exists: false } });
+    if (usersWithoutUid.length > 0) {
+      console.log(`Generating unique 8-digit IDs (uid) for ${usersWithoutUid.length} users...`);
+      for (const u of usersWithoutUid) {
+        let uniqueId = '';
+        let exists = true;
+        while (exists) {
+          uniqueId = Math.floor(10000000 + Math.random() * 90000000).toString();
+          const dupe = await User.findOne({ uid: uniqueId });
+          if (!dupe) exists = false;
+        }
+        u.uid = uniqueId;
+        await u.save();
+      }
+      console.log('Successfully completed 8-digit ID migration for all users!');
+    }
+  } catch (error) {
+    console.error('Migration error generating uids for existing users:', error);
+  }
+};
+
 // Connect to MongoDB
-connectDB();
+connectDB().then(() => {
+  generateUidsForExistingUsers();
+});
 
 const app = express();
 const server = http.createServer(app);

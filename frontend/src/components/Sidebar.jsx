@@ -61,7 +61,12 @@ const Sidebar = ({ currentPage, onNavigate, theme, onToggleTheme }) => {
           </div>
           <div className="min-w-0 flex-1">
             <h4 className="text-sm font-semibold text-white truncate leading-snug">{user.name}</h4>
-            <div className="flex items-center gap-1 mt-0.5">
+            {user?.uid && (
+              <span className="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">
+                ID: {user.uid}
+              </span>
+            )}
+            <div className="flex items-center gap-1 mt-1">
               <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
               <span className="text-xs text-slate-300 font-medium">
                 {user.averageRating > 0 ? user.averageRating : 'New'}

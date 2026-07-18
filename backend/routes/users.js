@@ -72,6 +72,7 @@ router.get('/match/explore', protect, async (req, res) => {
           _id: otherUser._id,
           name: otherUser.name,
           email: otherUser.email,
+          uid: otherUser.uid,
           skillsOffered: otherUser.skillsOffered,
           skillsNeeded: otherUser.skillsNeeded,
           bio: otherUser.bio,

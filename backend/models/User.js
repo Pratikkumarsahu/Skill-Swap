@@ -71,10 +71,32 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  uid: {
+    type: String,
+    unique: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
+});
+
+// Pre-save hook to generate a unique 8-digit ID
+userSchema.pre('save', async function (next) {
+  if (!this.uid) {
+    let uniqueId = '';
+    let exists = true;
+    while (exists) {
+      // Generate a random 8-digit number string
+      uniqueId = Math.floor(10000000 + Math.random() * 90000000).toString();
+      const existingUser = await mongoose.models.User.findOne({ uid: uniqueId });
+      if (!existingUser) {
+        exists = false;
+      }
+    }
+    this.uid = uniqueId;
+  }
+  next();
 });
 
 const User = mongoose.model('User', userSchema);

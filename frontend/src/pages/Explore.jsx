@@ -179,6 +179,7 @@ const Explore = ({ onNavigate, setSelectChatUserId }) => {
   const filteredMatches = matches.filter((match) => {
     const searchLower = searchQuery.toLowerCase();
     const matchesName = match.user.name.toLowerCase().includes(searchLower);
+    const matchesUid = match.user.uid && match.user.uid.toLowerCase().includes(searchLower);
     const matchesBio = match.user.bio.toLowerCase().includes(searchLower);
     const matchesSkillsOffered = match.user.skillsOffered.some((s) =>
       s.toLowerCase().includes(searchLower)
@@ -188,7 +189,7 @@ const Explore = ({ onNavigate, setSelectChatUserId }) => {
     );
 
     const matchesSearch =
-      matchesName || matchesBio || matchesSkillsOffered || matchesSkillsNeeded;
+      matchesName || matchesUid || matchesBio || matchesSkillsOffered || matchesSkillsNeeded;
 
     if (filterPerfect) {
       return matchesSearch && match.matchType === 'perfect';
@@ -267,8 +268,13 @@ const Explore = ({ onNavigate, setSelectChatUserId }) => {
                     className="w-14 h-14 rounded-2xl border border-slate-800 object-cover"
                   />
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-extrabold text-white text-base leading-snug truncate">
+                    <h3 className="font-extrabold text-white text-base leading-snug truncate flex items-center gap-1.5">
                       {match.user.name}
+                      {match.user.uid && (
+                        <span className="text-[10px] text-slate-500 font-normal bg-slate-950 px-1.5 py-0.2 rounded border border-slate-850">
+                          ID: {match.user.uid}
+                        </span>
+                      )}
                     </h3>
                     <div className="flex items-center gap-1.5 mt-1">
                       <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
@@ -401,7 +407,7 @@ const Explore = ({ onNavigate, setSelectChatUserId }) => {
               <>
                 <h3 className="text-lg font-bold text-white mb-1">Propose Swap Session</h3>
                 <p className="text-sm text-slate-400 mb-5">
-                  Schedule an exchange session with <span className="text-indigo-400 font-semibold">{selectedPartner.name}</span>.
+                  Schedule an exchange session with <span className="text-indigo-400 font-semibold">{selectedPartner.name} {selectedPartner.uid && `(ID: ${selectedPartner.uid})`}</span>.
                 </p>
 
                 {bookingError && (

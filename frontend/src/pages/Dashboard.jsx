@@ -68,13 +68,17 @@ const Dashboard = ({ onNavigate, setSelectChatUserId }) => {
     (s) => s.status === 'pending' && s.receiver._id === user._id
   );
 
-  // Filter users matching search query for the Quick Skill Finder
+  // Filter users matching search query for the Quick Skill Finder (searches Name, UID, and Skills Offered)
   const searchResults = skillSearchQuery
-    ? matches.filter((match) =>
-        match.user.skillsOffered.some((s) =>
-          s.toLowerCase().includes(skillSearchQuery.toLowerCase())
-        )
-      )
+    ? matches.filter((match) => {
+        const query = skillSearchQuery.toLowerCase();
+        const matchesName = match.user.name.toLowerCase().includes(query);
+        const matchesUid = match.user.uid && match.user.uid.toLowerCase().includes(query);
+        const matchesSkills = match.user.skillsOffered.some((s) =>
+          s.toLowerCase().includes(query)
+        );
+        return matchesName || matchesUid || matchesSkills;
+      })
     : [];
 
   // Helper to open chat window
@@ -174,52 +178,61 @@ const Dashboard = ({ onNavigate, setSelectChatUserId }) => {
           <div className="mt-4 border border-slate-800 rounded-xl bg-slate-950 overflow-hidden divide-y divide-slate-800 max-h-60 overflow-y-auto">
             {searchResults.length === 0 ? (
               <div className="p-4 text-center text-slate-500 text-xs">
-                No users found who teach "{skillSearchQuery}".
+                No users found matching "{skillSearchQuery}".
               </div>
             ) : (
-              searchResults.map((match) => (
-                <div
-                  key={match.user._id}
-                  onClick={() => handleStartChat(match.user._id)}
-                  className="p-3.5 flex items-center justify-between hover:bg-slate-850 cursor-pointer transition-all group"
-                >
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={match.user.avatar || 'https://via.placeholder.com/150'}
-                      alt={match.user.name}
-                      className="w-10 h-10 rounded-xl object-cover border border-slate-850"
-                    />
-                    <div>
-                      <h4 className="text-xs font-bold text-white group-hover:text-indigo-400 transition-colors">
-                        {match.user.name}
-                      </h4>
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                        <span className="text-[10px] text-slate-300">
-                          {match.user.averageRating > 0 ? match.user.averageRating : 'New'}
-                        </span>
+              searchResults.map((match) => {
+                const matchedSkills = match.user.skillsOffered.filter(s =>
+                  s.toLowerCase().includes(skillSearchQuery.toLowerCase())
+                );
+                const skillsToDisplay = matchedSkills.length > 0 ? matchedSkills : match.user.skillsOffered;
+
+                return (
+                  <div
+                    key={match.user._id}
+                    onClick={() => handleStartChat(match.user._id)}
+                    className="p-3.5 flex items-center justify-between hover:bg-slate-850 cursor-pointer transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={match.user.avatar || 'https://via.placeholder.com/150'}
+                        alt={match.user.name}
+                        className="w-10 h-10 rounded-xl object-cover border border-slate-850"
+                      />
+                      <div>
+                        <h4 className="text-xs font-bold text-white group-hover:text-indigo-400 transition-colors flex items-center gap-1.5">
+                          {match.user.name}
+                          {match.user.uid && (
+                            <span className="text-[9px] text-slate-500 font-normal bg-slate-900 px-1.5 py-0.2 rounded border border-slate-800">
+                              ID: {match.user.uid}
+                            </span>
+                          )}
+                        </h4>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                          <span className="text-[10px] text-slate-300">
+                            {match.user.averageRating > 0 ? match.user.averageRating : 'New'}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <span className="text-[10px] text-slate-500 block uppercase font-semibold">Teaches</span>
-                      <div className="flex gap-1 mt-0.5">
-                        {match.user.skillsOffered
-                          .filter(s => s.toLowerCase().includes(skillSearchQuery.toLowerCase()))
-                          .map(s => (
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <span className="text-[10px] text-slate-500 block uppercase font-semibold">Teaches</span>
+                        <div className="flex gap-1 mt-0.5">
+                          {skillsToDisplay.map((s) => (
                             <span key={s} className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                               {s}
                             </span>
-                          ))
-                        }
+                          ))}
+                        </div>
                       </div>
+                      <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-indigo-400 transition-all" />
                     </div>
-                    <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-indigo-400 transition-all" />
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         )}
