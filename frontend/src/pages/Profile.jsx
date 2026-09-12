@@ -138,6 +138,14 @@ const Profile = () => {
             Manage your skills and bio.
           </p>
         </div>
+        <div className="flex items-center gap-3 bg-slate-900 border border-slate-800 px-4 py-2.5 rounded-2xl">
+          <div>
+            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">Your Unique ID (UID)</span>
+            <span className="text-base font-mono font-extrabold text-emerald-400">
+              {user?.uid || (user?._id ? user._id.slice(-8).toUpperCase() : '........')}
+            </span>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

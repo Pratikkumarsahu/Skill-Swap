@@ -61,11 +61,11 @@ const Sidebar = ({ currentPage, onNavigate, theme, onToggleTheme }) => {
           </div>
           <div className="min-w-0 flex-1">
             <h4 className="text-sm font-semibold text-white truncate leading-snug">{user.name}</h4>
-            {user?.uid && (
-              <span className="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">
-                ID: {user.uid}
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-[10px] font-mono font-bold text-emerald-400 tracking-wider">
+                ID: {user?.uid || (user?._id ? user._id.slice(-8).toUpperCase() : '........')}
               </span>
-            )}
+            </div>
             <div className="flex items-center gap-1 mt-1">
               <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
               <span className="text-xs text-slate-300 font-medium">

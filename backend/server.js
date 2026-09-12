@@ -28,7 +28,9 @@ dotenv.config();
 // Auto-migration helper: Generate unique 8-digit IDs for any existing database users
 const generateUidsForExistingUsers = async () => {
   try {
-    const usersWithoutUid = await User.find({ uid: { $exists: false } });
+    const usersWithoutUid = await User.find({
+      $or: [{ uid: { $exists: false } }, { uid: null }, { uid: '' }],
+    });
     if (usersWithoutUid.length > 0) {
       console.log(`Generating unique 8-digit IDs (uid) for ${usersWithoutUid.length} users...`);
       for (const u of usersWithoutUid) {

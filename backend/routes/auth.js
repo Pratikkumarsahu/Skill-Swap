@@ -60,6 +60,7 @@ router.post('/register', async (req, res) => {
 
       res.status(201).json({
         _id: user._id,
+        uid: user.uid,
         name: user.name,
         email: user.email,
         avatar: user.avatar,
@@ -88,8 +89,22 @@ router.post('/login', async (req, res) => {
     const user = await User.findOne({ email }).select('+password');
 
     if (user && (await bcrypt.compare(password, user.password))) {
+      // Ensure user has an 8-digit unique ID
+      if (!user.uid) {
+        let uniqueId = '';
+        let exists = true;
+        while (exists) {
+          uniqueId = Math.floor(10000000 + Math.random() * 90000000).toString();
+          const dupe = await User.findOne({ uid: uniqueId });
+          if (!dupe) exists = false;
+        }
+        user.uid = uniqueId;
+        await user.save();
+      }
+
       res.json({
         _id: user._id,
+        uid: user.uid,
         name: user.name,
         email: user.email,
         skillsOffered: user.skillsOffered,
@@ -140,10 +155,23 @@ router.post('/verify-otp', async (req, res) => {
     user.isVerified = true;
     user.otp = null;
     user.otpExpiry = null;
+
+    if (!user.uid) {
+      let uniqueId = '';
+      let exists = true;
+      while (exists) {
+        uniqueId = Math.floor(10000000 + Math.random() * 90000000).toString();
+        const dupe = await User.findOne({ uid: uniqueId });
+        if (!dupe) exists = false;
+      }
+      user.uid = uniqueId;
+    }
+
     await user.save();
 
     res.json({
       _id: user._id,
+      uid: user.uid,
       name: user.name,
       email: user.email,
       skillsOffered: user.skillsOffered,
@@ -199,6 +227,17 @@ router.get('/me', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     if (user) {
+      if (!user.uid) {
+        let uniqueId = '';
+        let exists = true;
+        while (exists) {
+          uniqueId = Math.floor(10000000 + Math.random() * 90000000).toString();
+          const dupe = await User.findOne({ uid: uniqueId });
+          if (!dupe) exists = false;
+        }
+        user.uid = uniqueId;
+        await user.save();
+      }
       res.json(user);
     } else {
       res.status(404).json({ message: 'User not found' });
@@ -227,11 +266,23 @@ router.put('/profile', protect, async (req, res) => {
         user.avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(req.body.name)}&background=random&color=fff&size=128`;
       }
 
+      if (!user.uid) {
+        let uniqueId = '';
+        let exists = true;
+        while (exists) {
+          uniqueId = Math.floor(10000000 + Math.random() * 90000000).toString();
+          const dupe = await User.findOne({ uid: uniqueId });
+          if (!dupe) exists = false;
+        }
+        user.uid = uniqueId;
+      }
+
       const updatedUser = await user.save();
 
       // Send back updated profile
       res.json({
         _id: updatedUser._id,
+        uid: updatedUser.uid,
         name: updatedUser.name,
         email: updatedUser.email,
         skillsOffered: updatedUser.skillsOffered,

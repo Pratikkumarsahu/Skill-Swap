@@ -22,8 +22,8 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      // If user profile is already populated in memory (e.g. from login/registration), skip network request
-      if (user) {
+      // If user profile is already populated in memory with uid, skip network request
+      if (user && user.uid) {
         setLoading(false);
         return;
       }
